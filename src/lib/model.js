@@ -52,7 +52,8 @@ const postSchema = new mongoose.Schema({
 }, {timestamps: true})
 
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-const Post = mongoose.model.Post ||  mongoose.model("Post", postSchema);
+export const User = mongoose.models.User || mongoose.model("User", userSchema);
+export const Post = mongoose.models.Post || mongoose.model("Post", postSchema);
 
-export { User, Post };
+
+
