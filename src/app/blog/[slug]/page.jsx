@@ -4,16 +4,20 @@ import PostUser from "@/components/postUser/postUser";
 import { Suspense } from "react";
 import { getPost } from "@/lib/data";
 
-// FETCH DATA WITH AN API
-// const getData = async (slug) => {
-//   const res = await fetch(`http://localhost:3000/api/blog/${slug}`);
+const getData = async (slug) => {
+  try {
+    const res = await fetch(`http://localhost:3000/api/blog/${slug}`); // when you delete etch(`http://localhost:3000/api/blog/${slug}`, {method:"DELETE"})
+    // console.log(res);
+    if (!res.ok) {
+      throw new Error("Something went wrong");
+    }
+    return res.json();
+  } catch (error) {
+    console.error("An error occurred:", error);
+    throw error;
+  }
+};
 
-//   if (!res.ok) {
-//     throw new Error("Something went wrong");
-//   }
-
-//   return res.json();
-// };
 // search engine optimization
 export const generateMetadata = async ({ params }) => {
   const { slug } = params;
@@ -30,15 +34,17 @@ export const generateMetadata = async ({ params }) => {
 const SinglePostPage = async ({ params }) => {
   const { slug } = params;
 
+  getData(slug);
+
   // FETCH DATA WITH AN API
   // const post = await getData(slug);
 
   // FETCH DATA WITHOUT AN API
   const post = await getPost(slug);
-    // console.log(post);
-   
+  // console.log(post);
+
   return (
-    <div className={styles.container}>      
+    <div className={styles.container}>
       {post.img && (
         <div className={styles.imgContainer}>
           <Image src={post.img} alt="" fill className={styles.img} />
