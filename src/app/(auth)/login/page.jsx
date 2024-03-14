@@ -1,7 +1,7 @@
-// import LoginForm from "@/components/loginForm/loginForm";
 import { handleGithubLogin } from "@/lib/action";
 // import { auth, signIn } from "@/lib/auth";
 import styles from "./login.module.css";
+import LoginForm from "@/components/loginForm/loginForm";
 
 const LoginPage = async () => {
   //   const session = await auth();
@@ -13,7 +13,7 @@ const LoginPage = async () => {
         <form action={handleGithubLogin}>
           <button className={styles.github}>Login with Github</button>
         </form>
-        {/* <LoginForm /> */}
+        <LoginForm />
       </div>
     </div>
   );

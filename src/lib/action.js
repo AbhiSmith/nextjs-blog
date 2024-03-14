@@ -1,6 +1,7 @@
 "use server";
 import { Post } from "./model";
 import { User } from "./model";
+import bcrypt from "bcryptjs";
 
 import { connectTODb } from "./utils";
 
@@ -71,20 +72,78 @@ export const handleLogout = async () => {
   await signOut();
 };
 
-export const registerUser = async (fromData) => {
+export const registerUser = async (previousState, fromData) => {
   try {
     connectTODb();
     const { username, email, password, img } = Object.fromEntries(fromData);
     const validUser = await User.findOne({ username });
     if (validUser) {
-      return console.log("User already exists");
+      return { error: "Username already exists" };
     }
-    const user = await new User({ username, email, password, img });
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+    const user = await new User({
+      username,
+      email,
+      password: hashPassword,
+      img,
+    });
     await user.save();
 
-    return console.log("User registered successfully");
+    return { success: true };
   } catch (error) {
     console.log(error);
-    return { error: "Something went wrong" };
+    return { error: "Something went wrong!" };
+  }
+};
+
+export const login = async (prevState, formData) => {
+  const { username, password } = Object.fromEntries(formData);
+
+  try {
+    await signIn("credentials", { username, password });
+  } catch (err) {
+    console.log(err);
+
+    if (err.message.includes("CredentialsSignin")) {
+      return { error: "Invalid username or password" };
+    }
+    throw err;
+  }
+};
+
+export const addUser = async (prevState, formData) => {
+  const { username, email, password, img } = Object.fromEntries(formData);
+
+  try {
+    connectTODb();
+    const newUser = new User({
+      username,
+      email,
+      password,
+      img,
+    });
+
+    await newUser.save();
+    console.log("saved to db");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong!" };
+  }
+};
+
+export const deleteUser = async (formData) => {
+  const { id } = Object.fromEntries(formData);
+  try {
+    connectTODb();
+
+    await Post.deleteMany({ userId: id });
+    await User.findByIdAndDelete(id);
+    console.log("deleted from db");
+    revalidatePath("/admin");
+  } catch (err) {
+    console.log(err);
+    return { error: "Something went wrong!" };
   }
 };

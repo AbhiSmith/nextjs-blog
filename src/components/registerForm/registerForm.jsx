@@ -17,7 +17,7 @@ const RegisterForm = () => {
   }, [state?.success, router]);
 
   return (
-    <form className={styles.form} action={registerUser}>
+    <form className={styles.form} action={formAction}>
       <input type="text" placeholder="username" name="username" />
       <input type="email" placeholder="email" name="email" />
       <input type="password" placeholder="password" name="password" />

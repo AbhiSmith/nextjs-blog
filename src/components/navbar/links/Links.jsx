@@ -5,7 +5,6 @@ import styles from "./links.module.css";
 import NavLink from "./navlink/navLinks";
 import Image from "next/image";
 import { handleLogout } from "@/lib/action";
-import { auth } from "@/lib/auth";
 
 const links = [
   {

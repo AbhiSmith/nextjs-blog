@@ -2,27 +2,30 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import { connectTODb } from "./utils";
 import { User } from "./model";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { authConfig } from "./auth.config";
 
-let connectToDb;
+const login = async (credentials) => {
+  try {
+    connectTODb();
+    console.log(credentials);
+    const user = await User.findOne({ username: credentials.username });
+    // if (!user) throw new Error("Wrong credentials!");
+    if (!user) return null;
+    const isPasswordCorrect = await bcrypt.compare(
+      credentials.password,
+      user.password
+    );
 
-// Dynamically import the connectTODb function from the "./utils" module
-// import("./utils")
-//   .then((module) => {
-//     connectToDb = module.connectToDb;
-//   })
-//   .catch((error) => {
-//     console.error("Error loading connectToDb function:", error);
-//   });
+    if (!isPasswordCorrect) throw new Error("Wrong credentials!");
 
-// Ensure that the connectToDb function is available before using it
-// const doSomethingWithDb = async () => {
-//   if (!connectToDb) {
-//     console.error("connectToDb function is not yet loaded");
-//     return;
-//   }
-
-//   await connectToDb();
-// };
+    return user;
+  } catch (error) {
+    console.log(err);
+    throw new Error("Failed to login!");
+  }
+};
 
 export const {
   // const user = User.findOne({ email: profile.email });
@@ -31,10 +34,21 @@ export const {
   signIn,
   signOut,
 } = NextAuth({
+  ...authConfig,
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,
       clientSecret: process.env.AUTH_GITHUB_SECRET,
+    }),
+    CredentialsProvider({
+      async authorize(credentials) {
+        try {
+          const user = await login(credentials);
+          return user;
+        } catch (error) {
+          return null;
+        }
+      },
     }),
   ],
   callbacks: {
@@ -61,5 +75,6 @@ export const {
       }
       return true;
     },
+    ...authConfig.callbacks,
   },
 });
